@@ -1,0 +1,683 @@
+:root {
+    color-scheme: dark;
+    --accent-primary: #f04424;
+    --accent-primary-bright: #ff5a36;
+    --accent-primary-deep: #35110b;
+    --accent-primary-rgb: 240, 68, 36;
+    --accent-primary-deep-rgb: 53, 17, 11;
+    --accent-secondary: #f5a524;
+    --accent-secondary-deep: #70420c;
+    --accent-secondary-rgb: 245, 165, 36;
+    --accent-info: #52a8ff;
+    --accent-info-soft: #b9dbff;
+    --accent-info-deep: #112941;
+    --accent-info-rgb: 82, 168, 255;
+    --status-success: #35c878;
+    --status-success-rgb: 53, 200, 120;
+    --status-error: #f87171;
+    --total-net: #ff5a36;
+    --total-svc: #f5a524;
+    --total-vat: #ff8b69;
+    --total-sct: #f26a7a;
+    --total-payment: #35c878;
+    --total-neutral: #cbd1d5;
+    --total-net-rgb: 255, 90, 54;
+    --total-svc-rgb: 245, 165, 36;
+    --total-vat-rgb: 255, 139, 105;
+    --total-sct-rgb: 242, 106, 122;
+    --total-payment-rgb: 53, 200, 120;
+    --row-hover: #20262a;
+    --surface-0: #070809;
+    --surface-1: #0d1012;
+    --surface-2: #15191c;
+    --surface-3: #20262a;
+    --surface-0-rgb: 7, 8, 9;
+    --surface-1-rgb: 13, 16, 18;
+    --surface-2-rgb: 21, 25, 28;
+    --border-1: #282f33;
+    --border-2: #394248;
+    --border-3: #4a555c;
+    --border-1-rgb: 40, 47, 51;
+    --text-1: #f2f4f5;
+    --text-2: #cbd1d5;
+    --text-3: #929ca3;
+    --text-4: #69747b;
+    --gradient-start: #ff3d21;
+    --gradient-mid: #f06420;
+    --gradient-end: #f5a524;
+    --shadow-accent: rgba(var(--accent-primary-rgb), 0.20);
+
+    /* Compatibility aliases keep the existing v7.5 selectors unchanged. */
+    --signal-red: var(--accent-primary);
+    --signal-red-bright: var(--accent-primary-bright);
+    --signal-red-deep: var(--accent-primary-deep);
+    --signal-amber: var(--accent-secondary);
+    --signal-blue: var(--accent-info);
+    --signal-green: var(--status-success);
+}
+
+body {
+    background:
+        radial-gradient(circle at 50% -20%, rgba(var(--accent-primary-rgb), 0.08), transparent 38%),
+        var(--surface-0) !important;
+}
+
+.theme-picker {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 999px;
+    background: var(--surface-2);
+}
+
+.theme-picker-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    box-shadow: 0 0 7px rgba(var(--accent-primary-rgb), 0.72);
+}
+
+.theme-picker-dot.loading { animation: theme-pulse 0.9s ease-in-out infinite alternate; }
+.theme-picker-dot.remote { background: var(--status-success); box-shadow: 0 0 7px rgba(var(--status-success-rgb), 0.72); }
+.theme-picker-dot.fallback { background: var(--accent-secondary); box-shadow: 0 0 7px rgba(var(--accent-secondary-rgb), 0.72); }
+
+.theme-picker select {
+    max-width: 132px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text-2);
+    font: 700 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    letter-spacing: 0.025em;
+    cursor: pointer;
+}
+
+.theme-picker select:disabled { cursor: wait; color: var(--text-4); }
+.theme-picker option { background: var(--surface-2); color: var(--text-1); }
+
+@keyframes theme-pulse {
+    from { opacity: 0.45; transform: scale(0.82); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.tab-active {
+    color: #ffffff !important;
+    border-bottom-color: var(--signal-red) !important;
+    text-shadow: 0 0 18px rgba(var(--accent-primary-rgb), 0.35);
+}
+
+@keyframes flash {
+    0%, 15% {
+        background-color: rgba(var(--accent-primary-rgb), 0.12);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.flash {
+    animation: flash 0.4s ease-out;
+}
+
+.bg-zinc-950 { background-color: var(--surface-0) !important; }
+.bg-zinc-950\/20 { background-color: rgba(var(--surface-0-rgb), 0.20) !important; }
+.bg-zinc-950\/30 { background-color: rgba(var(--surface-0-rgb), 0.30) !important; }
+.bg-zinc-950\/40 { background-color: rgba(var(--surface-0-rgb), 0.40) !important; }
+.bg-zinc-950\/60 { background-color: rgba(var(--surface-0-rgb), 0.70) !important; }
+.bg-zinc-900 { background-color: var(--surface-1) !important; }
+.bg-zinc-900\/30 { background-color: rgba(var(--surface-1-rgb), 0.30) !important; }
+.bg-zinc-900\/40 { background-color: rgba(var(--surface-1-rgb), 0.55) !important; }
+.bg-zinc-900\/80 { background-color: rgba(var(--surface-1-rgb), 0.88) !important; }
+.bg-zinc-800 { background-color: var(--surface-2) !important; }
+.bg-zinc-800\/40 { background-color: rgba(var(--surface-2-rgb), 0.55) !important; }
+.bg-zinc-700 { background-color: var(--surface-3) !important; }
+
+.border-zinc-800 { border-color: var(--border-1) !important; }
+.border-zinc-700 { border-color: var(--border-2) !important; }
+.border-zinc-600 { border-color: var(--border-3) !important; }
+.divide-zinc-800\/60 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgba(var(--border-1-rgb), 0.75) !important;
+}
+
+.text-zinc-100 { color: var(--text-1) !important; }
+.text-zinc-200 { color: #dde2e5 !important; }
+.text-zinc-300 { color: var(--text-2) !important; }
+.text-zinc-400 { color: var(--text-3) !important; }
+.text-zinc-500 { color: var(--text-4) !important; }
+.text-zinc-600 { color: #505b62 !important; }
+
+.text-emerald-300,
+.text-emerald-400,
+.text-emerald-400\/90 {
+    color: var(--signal-red-bright) !important;
+}
+
+.bg-emerald-500,
+.bg-emerald-600 {
+    background-color: var(--signal-red) !important;
+}
+
+.bg-emerald-500\/10 {
+    background-color: rgba(var(--accent-primary-rgb), 0.10) !important;
+}
+
+.bg-emerald-900,
+.bg-emerald-950 {
+    background-color: var(--signal-red-deep) !important;
+}
+
+.bg-emerald-900\/30 {
+    background-color: rgba(var(--accent-primary-deep-rgb), 0.35) !important;
+}
+
+.bg-emerald-950\/20 {
+    background-color: rgba(var(--accent-primary-deep-rgb), 0.32) !important;
+}
+
+.border-emerald-500,
+.border-emerald-500\/20,
+.border-emerald-500\/50,
+.border-emerald-700\/70,
+.border-emerald-800\/50,
+.border-emerald-800\/60 {
+    border-color: rgba(var(--accent-primary-rgb), 0.65) !important;
+}
+
+.from-emerald-400 {
+    --tw-gradient-from: var(--gradient-start) var(--tw-gradient-from-position) !important;
+}
+
+.via-teal-500 {
+    --tw-gradient-via: var(--gradient-mid) var(--tw-gradient-via-position) !important;
+}
+
+.to-sky-400,
+.to-sky-600 {
+    --tw-gradient-to: var(--gradient-end) var(--tw-gradient-to-position) !important;
+}
+
+.text-sky-200 { color: var(--accent-info-soft) !important; }
+.text-sky-400 { color: var(--signal-blue) !important; }
+.bg-sky-800,
+.bg-sky-900 { background-color: var(--accent-info-deep) !important; }
+.bg-sky-900\/30,
+.bg-sky-950\/20 { background-color: rgba(var(--accent-info-rgb), 0.18) !important; }
+.border-sky-700 { border-color: rgba(var(--accent-info-rgb), 0.64) !important; }
+
+.text-fuchsia-400 { color: var(--total-vat) !important; }
+.bg-fuchsia-900\/30,
+.bg-fuchsia-950\/20 { background-color: rgba(var(--total-vat-rgb), 0.14) !important; }
+
+.text-amber-400 { color: var(--signal-amber) !important; }
+.bg-amber-500,
+.bg-amber-600 { background-color: var(--accent-secondary-deep) !important; }
+.bg-amber-500\/10 { background-color: rgba(var(--accent-secondary-rgb), 0.10) !important; }
+.bg-amber-900\/30,
+.bg-amber-950\/20 { background-color: rgba(var(--accent-secondary-rgb), 0.16) !important; }
+.border-amber-500\/20,
+.border-amber-500\/25 { border-color: rgba(var(--accent-secondary-rgb), 0.42) !important; }
+
+.total-family-net { color: var(--total-net) !important; }
+.total-family-svc { color: var(--total-svc) !important; }
+.total-family-vat { color: var(--total-vat) !important; }
+.total-family-sct { color: var(--total-sct) !important; }
+.total-family-payment { color: var(--total-payment) !important; }
+.total-family-neutral { color: var(--total-neutral) !important; }
+
+#log-table-body .total-family-net.total-cell {
+    background-color: rgba(var(--total-net-rgb), 0.10) !important;
+}
+
+#log-table-body .total-family-svc.total-cell {
+    background-color: rgba(var(--total-svc-rgb), 0.08) !important;
+}
+
+#log-table-body .total-family-vat.total-cell {
+    background-color: rgba(var(--total-vat-rgb), 0.08) !important;
+}
+
+#log-table-body .total-family-sct.total-cell {
+    background-color: rgba(var(--total-sct-rgb), 0.08) !important;
+}
+
+#log-table-body .total-family-payment.total-cell {
+    background-color: rgba(var(--total-payment-rgb), 0.08) !important;
+}
+
+#log-table-body .total-family-neutral.total-cell {
+    background-color: var(--surface-1) !important;
+}
+
+#log-table-body tr.group:hover > td {
+    background-color: var(--row-hover) !important;
+}
+
+#global-status-dot,
+#formatter-status-icon.bg-emerald-500 {
+    background-color: var(--signal-green) !important;
+    box-shadow: 0 0 8px rgba(var(--status-success-rgb), 0.75) !important;
+}
+
+#global-status-text.text-emerald-400,
+#formatter-status-bar.text-emerald-400,
+#response-status-badge.text-emerald-400 {
+    color: var(--signal-green) !important;
+}
+
+#log-table-body span.text-emerald-400 {
+    color: var(--signal-green) !important;
+}
+
+#log-table-body span.bg-emerald-500\/10 {
+    background-color: rgba(var(--status-success-rgb), 0.10) !important;
+}
+
+#log-table-body span.border-emerald-500\/20 {
+    border-color: rgba(var(--status-success-rgb), 0.35) !important;
+}
+
+button.bg-emerald-600,
+button.bg-emerald-950 {
+    color: #ffffff !important;
+    border-color: rgba(var(--accent-primary-rgb), 0.70) !important;
+    box-shadow: 0 0 18px rgba(var(--accent-primary-rgb), 0.10);
+}
+
+.hover\:bg-emerald-500:hover {
+    background-color: var(--signal-red-bright) !important;
+}
+
+.hover\:bg-emerald-900:hover {
+    background-color: var(--accent-primary-deep) !important;
+}
+
+.hover\:text-emerald-300:hover,
+.group:hover .group-hover\:text-emerald-400 {
+    color: var(--accent-primary-bright) !important;
+}
+
+.hover\:border-emerald-500\/50:hover,
+.focus\:border-emerald-700\/70:focus,
+.hover\:border-emerald-800\/60:hover {
+    border-color: rgba(var(--accent-primary-rgb), 0.72) !important;
+}
+
+.group:hover .group-hover\:bg-emerald-900\/30 {
+    background-color: rgba(var(--accent-primary-deep-rgb), 0.45) !important;
+}
+
+.shadow-emerald-950\/40 {
+    --tw-shadow-color: var(--shadow-accent) !important;
+}
+
+input:focus,
+textarea:focus {
+    border-color: rgba(var(--accent-primary-rgb), 0.72) !important;
+}
+
+.bill-number-cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    min-width: 0;
+}
+
+.bill-number-cell > a {
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.cheque-count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    padding: 2px 4px;
+    border: 1px solid rgba(var(--accent-secondary-rgb), 0.42);
+    border-radius: 4px;
+    background: rgba(var(--accent-secondary-rgb), 0.09);
+    color: var(--signal-amber);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.cheque-count-badge i {
+    font-size: 7px;
+}
+
+::selection {
+    background: rgba(var(--accent-primary-rgb), 0.45);
+    color: #ffffff;
+}
+
+* {
+    scrollbar-color: var(--accent-primary-deep) var(--surface-0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Draft Invoice popup */
+body.draft-invoice-page {
+    min-height: 100vh;
+    padding-bottom: 48px;
+    background:
+        radial-gradient(circle at 50% -18%, rgba(var(--accent-primary-rgb), 0.10), transparent 36%),
+        var(--surface-0) !important;
+    color: var(--text-2) !important;
+}
+
+.draft-invoice-page .topbar {
+    background: rgba(var(--surface-1-rgb), 0.97) !important;
+    border-bottom-color: var(--border-1) !important;
+    box-shadow: 0 2px 18px rgba(0, 0, 0, 0.55) !important;
+}
+
+.draft-invoice-page .logo-box {
+    background: linear-gradient(135deg, var(--signal-red), var(--signal-amber)) !important;
+    box-shadow: 0 0 18px rgba(var(--accent-primary-rgb), 0.16);
+}
+
+.draft-invoice-page .logo-inner {
+    background: var(--surface-0) !important;
+}
+
+.draft-invoice-page .logo-text {
+    background: linear-gradient(135deg, var(--signal-red-bright), var(--signal-amber)) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+.draft-invoice-page .topbar-title {
+    color: var(--signal-red-bright) !important;
+}
+
+.draft-invoice-page .topbar-sub,
+.draft-invoice-page .topbar-badge .lbl,
+.draft-invoice-page .hf-label,
+.draft-invoice-page thead th {
+    color: var(--text-4) !important;
+}
+
+.draft-invoice-page .topbar-divider {
+    background: var(--border-1) !important;
+}
+
+.draft-invoice-page .topbar-badge,
+.draft-invoice-page .group-toggle,
+.draft-invoice-page .print-btn,
+.draft-invoice-page .section-count {
+    background: var(--surface-2) !important;
+    border-color: var(--border-2) !important;
+}
+
+.draft-invoice-page .topbar-badge .dot {
+    background: var(--signal-red) !important;
+    box-shadow: 0 0 7px rgba(var(--accent-primary-rgb), 0.78) !important;
+}
+
+.draft-invoice-page .topbar-badge .val,
+.draft-invoice-page .hf-value.accent {
+    color: var(--signal-red-bright) !important;
+}
+
+.draft-invoice-page .group-toggle:hover,
+.draft-invoice-page .print-btn:hover {
+    background: var(--surface-3) !important;
+    color: var(--text-1) !important;
+}
+
+.draft-invoice-page .group-toggle.on {
+    background: rgba(var(--accent-secondary-rgb), 0.12) !important;
+    border-color: rgba(var(--accent-secondary-rgb), 0.42) !important;
+    color: var(--signal-amber) !important;
+}
+
+.draft-invoice-page .group-toggle.on .toggle-pip {
+    background: rgba(var(--accent-secondary-rgb), 0.30) !important;
+}
+
+.draft-invoice-page .group-toggle.on .toggle-pip::after {
+    background: var(--signal-amber) !important;
+}
+
+.draft-invoice-page .draft-badge {
+    background: rgba(var(--accent-primary-rgb), 0.09) !important;
+    border-color: rgba(var(--accent-primary-rgb), 0.38) !important;
+    color: var(--signal-red-bright) !important;
+}
+
+.draft-invoice-page .cheque-badge {
+    background: rgba(var(--accent-secondary-rgb), 0.09) !important;
+    border-color: rgba(var(--accent-secondary-rgb), 0.38) !important;
+    color: var(--signal-amber) !important;
+}
+
+.draft-invoice-page .cheque-badge:hover {
+    background: rgba(var(--accent-secondary-rgb), 0.16) !important;
+    border-color: rgba(var(--accent-secondary-rgb), 0.62) !important;
+}
+
+.draft-invoice-page .header-card,
+.draft-invoice-page .table-wrap,
+.draft-invoice-page .totals-wrap {
+    background: var(--surface-1) !important;
+    border-color: var(--border-1) !important;
+}
+
+.draft-invoice-page .hf-value {
+    color: var(--text-1) !important;
+}
+
+.draft-invoice-page .hf-value.sky {
+    color: var(--signal-amber) !important;
+}
+
+.draft-invoice-page .hf-value.fuchsia {
+    color: var(--total-vat) !important;
+}
+
+.draft-invoice-page .section-header,
+.draft-invoice-page .totals-section-header,
+.draft-invoice-page thead tr {
+    background: var(--surface-0) !important;
+    border-color: var(--border-1) !important;
+}
+
+.draft-invoice-page .section-title {
+    color: var(--text-3) !important;
+}
+
+.draft-invoice-page .grouped-badge {
+    background: rgba(var(--accent-secondary-rgb), 0.08) !important;
+    border-color: rgba(var(--accent-secondary-rgb), 0.28) !important;
+    color: var(--signal-amber) !important;
+}
+
+.draft-invoice-page .inv-row td,
+.draft-invoice-page .totals-wrap td {
+    border-bottom-color: rgba(var(--border-1-rgb), 0.72) !important;
+}
+
+.draft-invoice-page .inv-row:hover td {
+    background: rgba(var(--accent-primary-rgb), 0.035) !important;
+}
+
+.draft-invoice-page .inv-row.grouped-row td {
+    background: rgba(var(--accent-secondary-rgb), 0.045) !important;
+}
+
+.draft-invoice-page .inv-row.grouped-row td:first-child {
+    border-left-color: rgba(var(--accent-secondary-rgb), 0.50) !important;
+}
+
+.draft-invoice-page .inv-row a,
+.draft-invoice-page .inv-row sup,
+.draft-invoice-page .inv-row td:nth-child(4) {
+    color: var(--signal-amber) !important;
+}
+
+/* All Cheque Details and single decoded cheque popups */
+body.cheque-details-page {
+    min-height: 100vh;
+    margin: 0;
+    padding: 24px;
+    background:
+        radial-gradient(circle at 50% -18%, rgba(var(--accent-primary-rgb), 0.10), transparent 36%),
+        var(--surface-0) !important;
+    color: var(--text-2) !important;
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace !important;
+    font-size: 12px;
+}
+
+.cheque-details-page *,
+.cheque-details-page *::before,
+.cheque-details-page *::after {
+    box-sizing: border-box;
+}
+
+.cheque-details-page .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    margin: -24px -24px 24px;
+    padding: 0 20px;
+    background: rgba(var(--surface-1-rgb), 0.97) !important;
+    border-bottom: 1px solid var(--border-1) !important;
+    box-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+
+.cheque-details-page .topbar-title {
+    color: var(--signal-red-bright) !important;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+}
+
+.cheque-details-page .cheque-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.cheque-details-page .cheque-box,
+.cheque-details-page > pre {
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 18px;
+    background: var(--surface-1) !important;
+    border: 1px solid var(--border-1) !important;
+    border-radius: 10px;
+    color: var(--text-2) !important;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.cheque-details-page .cheque-head {
+    display: block;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed rgba(var(--accent-secondary-rgb), 0.35) !important;
+    color: var(--signal-amber) !important;
+    font-weight: 700;
+}
+
+body.hrs-cheque-document {
+    background: var(--surface-0) !important;
+    color: var(--text-2) !important;
+}
+
+.hrs-cheque-document h1,
+.hrs-cheque-document h2,
+.hrs-cheque-document h3,
+.hrs-cheque-document strong,
+.hrs-cheque-document b {
+    color: var(--signal-red-bright) !important;
+}
+
+.hrs-cheque-document a {
+    color: var(--signal-amber) !important;
+}
+
+.hrs-cheque-document table {
+    border-collapse: collapse;
+    background: var(--surface-1) !important;
+    color: var(--text-2) !important;
+}
+
+.hrs-cheque-document th {
+    background: var(--surface-0) !important;
+    color: var(--signal-amber) !important;
+}
+
+.hrs-cheque-document th,
+.hrs-cheque-document td {
+    border-color: var(--border-1) !important;
+}
+
+.hrs-cheque-document pre,
+.hrs-cheque-document code {
+    background: var(--surface-1) !important;
+    color: var(--text-2) !important;
+    border-color: var(--border-1) !important;
+}
+
+@media print {
+    body.draft-invoice-page {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .draft-invoice-page .topbar,
+    .draft-invoice-page .print-btn,
+    .draft-invoice-page .draft-badge,
+    .draft-invoice-page .cheque-badge,
+    .draft-invoice-page .group-toggle {
+        display: none !important;
+    }
+
+    .draft-invoice-page .header-card,
+    .draft-invoice-page .table-wrap,
+    .draft-invoice-page .totals-wrap {
+        background: #ffffff !important;
+        border-color: #cccccc !important;
+    }
+
+    .draft-invoice-page thead th,
+    .draft-invoice-page .hf-label {
+        color: #555555 !important;
+    }
+
+    .draft-invoice-page .hf-value,
+    .draft-invoice-page .inv-row td,
+    .draft-invoice-page .totals-wrap td {
+        color: #000000 !important;
+    }
+}
