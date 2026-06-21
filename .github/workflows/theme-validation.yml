@@ -1,0 +1,85 @@
+name: Theme validation
+
+on:
+  push:
+    paths:
+      - "docs/manifest.json"
+      - "docs/themes/**"
+      - "HRS-Master-Tool-v7.6-base.css"
+      - ".github/workflows/theme-validation.yml"
+  pull_request:
+    paths:
+      - "docs/manifest.json"
+      - "docs/themes/**"
+      - "HRS-Master-Tool-v7.6-base.css"
+      - ".github/workflows/theme-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate manifest and variable-only themes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          required = {
+              '--accent-primary', '--accent-primary-bright', '--accent-primary-deep',
+              '--accent-primary-rgb', '--accent-primary-deep-rgb',
+              '--accent-secondary', '--accent-secondary-deep', '--accent-secondary-rgb',
+              '--accent-info', '--accent-info-soft', '--accent-info-deep', '--accent-info-rgb',
+              '--status-success', '--status-success-rgb', '--status-error',
+              '--total-net', '--total-svc', '--total-vat', '--total-sct',
+              '--total-payment', '--total-neutral', '--total-net-rgb', '--total-svc-rgb',
+              '--total-vat-rgb', '--total-sct-rgb', '--total-payment-rgb', '--row-hover',
+              '--surface-0', '--surface-1', '--surface-2', '--surface-3',
+              '--surface-0-rgb', '--surface-1-rgb', '--surface-2-rgb',
+              '--border-1', '--border-2', '--border-3', '--border-1-rgb',
+              '--text-1', '--text-2', '--text-3', '--text-4',
+              '--gradient-start', '--gradient-mid', '--gradient-end', '--shadow-accent',
+          }
+          root = Path('docs')
+          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
+          assert manifest.get('schemaVersion') == 1, 'schemaVersion must be 1'
+          assert isinstance(manifest.get('themes'), list) and manifest['themes'], 'themes must be a non-empty list'
+
+          ids = set()
+          for theme in manifest['themes']:
+              theme_id = theme.get('id', '')
+              version = theme.get('version', '')
+              css_path = theme.get('css', '')
+              assert re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', theme_id), f'invalid theme id: {theme_id}'
+              assert theme_id not in ids, f'duplicate theme id: {theme_id}'
+              assert isinstance(theme.get('label'), str) and theme['label'].strip(), f'missing label: {theme_id}'
+              assert re.fullmatch(r'\d+\.\d+\.\d+', version), f'invalid version: {theme_id}'
+              assert css_path == f'themes/{theme_id}-{version}.css', f'non-versioned CSS path: {theme_id}'
+              ids.add(theme_id)
+
+              path = root / css_path
+              assert path.is_file(), f'missing theme file: {path}'
+              css = re.sub(r'/\*.*?\*/', '', path.read_text(encoding='utf-8'), flags=re.S)
+              match = re.fullmatch(r'\s*:root\s*\{(?P<body>[^{}]*)\}\s*', css, flags=re.S)
+              assert match, f'{path} may contain only one :root block'
+              body = match.group('body')
+              declarations = dict(re.findall(r'(--[a-z0-9-]+)\s*:\s*([^;{}]+);', body, flags=re.I))
+              remainder = re.sub(r'--[a-z0-9-]+\s*:\s*[^;{}]+;', '', body, flags=re.I)
+              assert not remainder.strip(), f'{path} contains an invalid declaration'
+              assert set(declarations) == required, f'{path} variable contract mismatch: missing={sorted(required-set(declarations))}, extra={sorted(set(declarations)-required)}'
+              assert not re.search(r'!important|url\s*\(|@import|expression\s*\(', body, flags=re.I), f'{path} contains a prohibited value'
+
+          assert manifest.get('defaultTheme') in ids, 'defaultTheme is not defined'
+          base = Path('HRS-Master-Tool-v7.6-base.css').read_text(encoding='utf-8')
+          missing_base = sorted(name for name in required if name not in base)
+          assert not missing_base, f'base CSS misses variables: {missing_base}'
+          print(f'Validated {len(ids)} themes and {len(required)} required variables.')
+          PY
