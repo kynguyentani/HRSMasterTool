@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRS MASTER LOG TOOL v7.6</title>
+
+    <link id="dynamic-favicon" rel="icon" type="image/png" href="">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link id="base-theme-css" rel="stylesheet" href="HRS-Master-Tool-v7.6-base.css">
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 64, 64);
+            grad.addColorStop(0, '#f04424');
+            grad.addColorStop(1, '#f5a524');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 64, 64);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 22px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('NNK', 32, 32);
+            const link = document.getElementById('dynamic-favicon');
+            link.href = canvas.toDataURL('image/png');
+        });
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+</head>
+<body class="bg-zinc-950 text-zinc-100 h-screen overflow-hidden flex flex-col">
+
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• HEADER NAV â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <div class="h-16 border-b border-zinc-800 bg-zinc-900 px-6 flex items-center justify-between flex-shrink-0 z-30 relative shadow-md">
+        <div class="flex items-center gap-8 h-full text-sm font-medium">
+            
+            <div class="flex items-center gap-3 mr-4">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-sky-600 p-[2px] shadow-[0_0_15px_rgba(16,185,129,0.25)]">
+                    <div class="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
+                        <span class="bg-gradient-to-br from-emerald-400 to-sky-400 bg-clip-text text-transparent font-black font-mono text-[13px] tracking-tighter">NNK</span>
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center leading-none">
+                    <h1 class="text-emerald-400 font-bold tracking-widest text-[15px] mb-1.5">HRS MASTER LOG TOOL v7.6</h1>
+                    <span class="text-[9px] text-zinc-400 uppercase tracking-widest font-semibold font-mono">Vibecoded by NNK</span>
+                </div>
+            </div>
+
+            <div onclick="switchTab(0)" id="nav-0" class="cursor-pointer tab-nav tab-active flex items-center gap-2 h-full border-b-2 border-transparent px-2 pt-2 text-zinc-400 hover:text-white transition-colors duration-150">
+                <i class="fa-solid fa-file-lines"></i> LOG PROCESSOR
+            </div>
+            <div onclick="switchTab(1)" id="nav-1" class="cursor-pointer tab-nav flex items-center gap-2 h-full border-b-2 border-transparent px-2 pt-2 text-zinc-400 hover:text-white transition-colors duration-150">
+                <i class="fa-solid fa-code"></i> JSON FORMATTER
+            </div>
+            <div onclick="switchTab(2)" id="nav-2" class="cursor-pointer tab-nav flex items-center gap-2 h-full border-b-2 border-transparent px-2 pt-2 text-zinc-400 hover:text-white transition-colors duration-150">
+                <i class="fa-solid fa-rocket"></i> FISCAL API SENDER
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div id="global-status-indicator" class="flex items-center gap-2 bg-zinc-800 px-4 py-1.5 rounded-full border border-zinc-700">
+                <div id="global-status-dot" class="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_#10b981]"></div>
+                <span id="global-status-text" class="text-zinc-300 text-xs font-semibold uppercase tracking-wider">Ready</span>
+            </div>
+            <div id="current-bill-display" class="flex items-center gap-2.5 bg-zinc-800 border border-zinc-700 rounded-full px-4 py-1.5">
+                <span class="text-[10px] tracking-widest text-zinc-400 font-bold uppercase">BillNo Context</span>
+                <span id="current-bill-no" class="font-mono font-bold text-xs text-emerald-400">â€”</span>
+            </div>
+            <label id="theme-picker" class="theme-picker" title="Loading theme catalog">
+                <span id="theme-picker-dot" class="theme-picker-dot loading" aria-hidden="true"></span>
+                <select id="theme-select" aria-label="Color theme" disabled>
+                    <option value="signal-redline">Signal Redline</option>
+                </select>
+            </label>
+        </div>
+    </div>
+
+    <main class="flex-1 flex flex-col min-h-0 relative">
+
+        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TAB 0: LOG PROCESSOR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <div id="content-0" class="flex-1 flex flex-col min-h-0 p-4">
+            <div class="w-full max-w-[2000px] mx-auto flex flex-col flex-1 min-h-0 gap-4">
+                
+                <div onclick="document.getElementById('file-input').click()" 
+                     class="border border-dashed border-zinc-700 bg-zinc-900/40 hover:bg-zinc-900/80 hover:border-emerald-500/50 rounded-xl p-4 text-center cursor-pointer group flex items-center justify-center gap-4 shrink-0">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-zinc-500 group-hover:text-emerald-400"></i>
+                    <div class="text-left">
+                        <div class="text-sm font-semibold text-zinc-200 group-hover:text-white">Click to Select Log Files</div>
+                        <div class="text-xs text-zinc-500">Supports <span class="font-mono text-zinc-400">HrsPropertyConnector*.log</span> streams</div>
+                    </div>
+                    <input type="file" id="file-input" multiple accept=".log" class="hidden" onchange="processLogFiles(this)">
+                </div>
+
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3 flex flex-wrap gap-4 items-center justify-between shrink-0">
+                    <div class="flex items-center gap-3 flex-1 max-w-[400px]">
+                        <div class="relative w-full">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                            <input id="search-input" type="text" placeholder="Search BillNo / Hotel / Status / Command..." 
+                                   onkeyup="filterLogs()" 
+                                   class="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700 rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none placeholder-zinc-600">
+                        </div>
+                        <button onclick="clearFilter()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium text-xs rounded-lg">Reset</button>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 text-[11px] font-mono text-zinc-400 bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-lg" id="statsBar" style="display:none;"></div>
+                </div>
+
+                <div class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl flex flex-col min-h-0 overflow-hidden relative">
+                    <div class="flex-1 overflow-auto relative">
+                        <table class="w-full text-left border-collapse min-w-[2700px] table-fixed relative">
+                            <thead class="bg-zinc-950 border-b border-zinc-800 sticky top-0 z-20 text-[10px] uppercase tracking-wider text-zinc-400 font-semibold font-mono">
+                                <tr>
+                                    <th class="p-2.5 w-[50px] min-w-[50px] text-center sticky left-0 bg-zinc-950 z-30 shadow-[1px_0_0_#27272a]">#</th>
+                                    <th class="p-2.5 w-[100px] min-w-[100px] sticky left-[50px] bg-zinc-950 z-30 shadow-[1px_0_0_#27272a]">HotelCode</th>
+                                    <th class="p-2.5 w-[90px] min-w-[90px] sticky left-[150px] bg-zinc-950 z-30 shadow-[1px_0_0_#27272a]">Room#</th>
+                                    <th class="p-2.5 w-[140px] min-w-[140px] sticky left-[240px] bg-zinc-950 z-30 border-r border-zinc-800 shadow-[4px_0_12px_rgba(0,0,0,0.4)]">BillNo</th>
+                                    <th class="p-2.5 w-[160px]">BillGenDate</th>
+                                    <th class="p-2.5 w-[120px]">Command</th>
+                                    <th class="p-2.5 w-[100px]">Status Code</th>
+                                    <th class="p-2.5 w-[220px]">Response Source</th>
+                                    <th class="p-2.5 w-[300px]">Message</th>
+                                    <th class="p-2.5 w-[110px] text-right total-family-net">TotalNet</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-svc">TotalSVC8</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-svc">TotalSVC10</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-vat">TotalVAT8</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-vat">TotalVAT10</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-vat">TotalVAT5</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-sct">TotalSCT30</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-sct">TotalSCT20</th>
+                                    <th class="p-2.5 w-[110px] text-right total-family-net">TotalGross</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-neutral">TotalTIP</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-neutral">TotalPaidOut</th>
+                                    <th class="p-2.5 w-[100px] text-right total-family-neutral">TotalRounding</th>
+									<th class="p-2.5 w-[110px] text-right total-family-payment">TotalPayment</th>
+                                    <th class="p-2.5 w-[160px] text-center sticky right-0 bg-zinc-950 z-30 shadow-[-4px_0_12px_rgba(0,0,0,0.5)] border-l border-zinc-800">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="log-table-body" class="divide-y divide-zinc-800/60 font-medium text-[11px] text-zinc-300">
+                                <tr>
+                                    <td colspan="22" class="text-center py-20 text-zinc-500 font-medium relative z-0">
+                                        <i class="fa-solid fa-terminal block text-2xl mb-2 text-zinc-600"></i>
+                                        No logs loaded. Please select files above.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="h-10 bg-zinc-950 border-t border-zinc-800 px-4 flex items-center justify-between shrink-0 relative z-20" id="pagination-container">
+                        <div class="text-[11px] text-zinc-500 font-mono">Showing items 0-0 of 0 logs</div>
+                        <div class="flex items-center gap-1 font-mono text-[11px]" id="table-pagination"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TAB 1: JSON FORMATTER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <div id="content-1" class="flex-1 hidden flex-col min-h-0 p-4 overflow-hidden">
+            <div class="w-full max-w-[1800px] mx-auto flex flex-col flex-1 min-h-0 gap-4">
+                
+                <div class="grid grid-cols-2 flex-1 min-h-0 gap-4">
+                    <div class="flex flex-col min-h-0 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                        <div class="h-10 bg-zinc-950 border-b border-zinc-800 px-4 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2">
+                                <span id="inDot" class="w-1.5 h-1.5 rounded-full bg-zinc-700"></span>
+                                <span class="font-mono text-[10px] uppercase font-bold tracking-widest text-zinc-400">Input Dump Stream</span>
+                            </div>
+                            <span id="inBillNo" class="font-mono text-[10px] text-zinc-500 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">BillNo: â€”</span>
+                        </div>
+                        <textarea id="input-json" spellcheck="false" placeholder="Paste escaped JSON or normal JSON here..." 
+                                  class="flex-1 min-h-0 p-4 bg-zinc-900/40 text-[11px] font-mono text-zinc-200 outline-none resize-none placeholder-zinc-700 focus:bg-zinc-950/20"></textarea>
+                    </div>
+
+                    <div class="flex flex-col min-h-0 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                        <div class="h-10 bg-zinc-950 border-b border-zinc-800 px-4 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2">
+                                <span id="outDot" class="w-1.5 h-1.5 rounded-full bg-zinc-700"></span>
+                                <span class="font-mono text-[10px] uppercase font-bold tracking-widest text-zinc-400">Formatted Output JSON</span>
+                            </div>
+                            <span id="outBillNo" class="font-mono text-[10px] text-zinc-500 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">BillNo: â€”</span>
+                        </div>
+                        <textarea id="output-json" readonly placeholder="Resulting JSON will appear here..." 
+                                  class="flex-1 min-h-0 p-4 bg-zinc-950/40 text-[11px] font-mono text-emerald-400/90 outline-none resize-none placeholder-zinc-700 cursor-text whitespace-pre-wrap"></textarea>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-xl flex flex-wrap items-center justify-between shrink-0 gap-3">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="convertEscapedJson()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-black font-semibold text-xs rounded-lg flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Convert JSON
+                        </button>
+                        <button onclick="restoreToFlipJSON()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 active:scale-95 text-black font-semibold text-xs rounded-lg flex items-center gap-2">
+                            <i class="fa-solid fa-filter-circle-xmark"></i> Restore to FLIP JSON
+                        </button>
+                        <div class="h-6 w-px bg-zinc-700 mx-1"></div>
+                        <button onclick="copyOutput()" id="copyBtn" disabled class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 text-zinc-200 font-medium text-xs rounded-lg">ðŸ“‹ Copy</button>
+                        <button onclick="downloadJSON()" id="dlBtn" disabled class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 text-zinc-200 font-medium text-xs rounded-lg">â¬‡ï¸ Download</button>
+                        <button onclick="clearFormatter()" class="px-4 py-2 bg-zinc-800/40 hover:bg-zinc-800 text-zinc-400 font-medium text-xs rounded-lg">Clear</button>
+                        <div class="h-6 w-px bg-zinc-700 mx-1"></div>
+                        <button onclick="document.getElementById('splitLogFileInput').click()" class="px-4 py-2 bg-sky-900 hover:bg-sky-800 text-sky-200 border border-sky-700 font-medium text-xs rounded-lg flex items-center gap-2">
+                            <i class="fa-solid fa-file-zipper"></i> Split Log to JSONs
+                        </button>
+                        <input type="file" id="splitLogFileInput" accept=".log" multiple class="hidden" onchange="handleSplitLogFiles(this)">
+                    </div>
+
+                    <div id="formatter-status-bar" class="font-mono text-[10px] flex items-center gap-2 text-zinc-500 bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-lg">
+                        <div id="formatter-status-icon" class="w-1.5 h-1.5 rounded-full bg-zinc-700"></div>
+                        <span id="formatter-status-msg">System Standing By</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TAB 2: FISCAL API SENDER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <div id="content-2" class="flex-1 flex flex-col min-h-0 p-4 overflow-hidden hidden">
+            <div class="w-full max-w-[1800px] mx-auto flex flex-col flex-1 min-h-0 gap-3">
+
+                <!-- â”€â”€ CONFIG STRIP â”€â”€ -->
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 flex items-end gap-4 shrink-0">
+                    
+                    <!-- Bearer Token -->
+                    <div class="flex flex-col gap-1.5 flex-1 min-w-0">
+                        <label class="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-shield-halved text-zinc-600"></i> Bearer Token
+                        </label>
+                        <input id="api-token" type="text" placeholder="Paste active Bearer Authorization token here..." 
+                               clas…19602 tokens truncated…_THEME_LINKS}</head><body class="cheque-details-page single-cheque-page">
+<div class="topbar"><span class="topbar-title">&#x1F9FE; Cheque Details â€” Decoded</span></div>
+<pre>\${decoded.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+</body></html>\`);
+      win.document.close();
+    }
+  }
+
+  function buildRow(no, chk, date, tcode, tDesc, artId, artDesc, taxRate, qty, unitPrice, amt, grouped, chequeDetails) {
+    const rowCls = grouped ? 'inv-row grouped-row' : 'inv-row';
+    const amtVal = parseFloat(amt);
+    const amtC   = isNaN(amtVal) || amtVal >= 0 ? 'color:var(--total-net)' : 'color:var(--status-error)';
+    const chkDisplay = chequeDetails
+      ? \`<a href="#" onclick="openChequeDetails('\${chequeDetails.replace(/'/g, "\\\\'")}');return false;" title="View decoded ChequeDetails" style="color:#38bdf8;text-decoration:underline dotted;cursor:pointer;">\${esc(f(chk))}</a><sup style="margin-left:3px;font-size:8px;color:#38bdf8;opacity:.7;">&#x1F517;</sup>\`
+      : esc(f(chk));
+    return \`<tr class="\${rowCls}">
+      <td style="text-align:center;color:#71717a;">\${no}</td>
+      <td style="font-family:monospace;color:#a1a1aa;">\${chkDisplay}</td>
+      <td style="font-family:monospace;color:#a1a1aa;">\${esc(f(date))}</td>
+      <td style="font-family:monospace;color:var(--accent-info);font-weight:600;">\${esc(f(tcode))}</td>
+      <td style="color:#e4e4e7;">\${esc(f(tDesc))}</td>
+      <td style="font-family:monospace;color:var(--total-vat);">\${esc(f(artId))}</td>
+      <td style="color:#e4e4e7;font-size:11px;">\${esc(f(artDesc))}</td>
+      <td style="text-align:right;font-family:monospace;color:var(--accent-secondary);">\${esc(f(taxRate))}</td>
+      <td style="text-align:right;font-family:monospace;color:#a1a1aa;">\${fn(qty)}</td>
+      <td style="text-align:right;font-family:monospace;color:#a1a1aa;">\${fn(unitPrice)}</td>
+      <td style="text-align:right;font-family:monospace;font-weight:700;\${amtC};">\${fn(amt)}</td>
+    </tr>\`;
+  }
+
+  function swapTbody(htmlFn, countFn, badgeOn) {
+    const tbody   = document.getElementById('postingsTbody');
+    const wrap    = tbody.closest('.table-wrap');
+    const countEl = document.getElementById('postingCount');
+    const badgeEl = document.getElementById('groupedBadge');
+    const lockedH = wrap.getBoundingClientRect().height;
+    wrap.style.height = lockedH + 'px'; wrap.style.overflow = 'hidden';
+    const savedY = window.scrollY;
+    tbody.classList.add('fading'); countEl.classList.add('updating');
+    setTimeout(() => {
+      tbody.innerHTML = htmlFn();
+      countEl.textContent = countFn();
+      if (badgeOn) badgeEl.classList.add('visible'); else badgeEl.classList.remove('visible');
+      wrap.style.height = ''; wrap.style.overflow = '';
+      window.scrollTo(0, savedY);
+      requestAnimationFrame(() => { tbody.classList.remove('fading'); countEl.classList.remove('updating'); });
+    }, 130);
+  }
+
+  function buildUngroupedHtml() {
+    if (!INV_POSTINGS.length) return '<tr><td colspan="11" style="text-align:center;padding:32px 0;color:#52525b;font-style:italic;">No postings with HRSAmount found.</td></tr>';
+    return INV_POSTINGS.map((p, i) => {
+      const tcode  = p.TrxCode   || '';
+      const artId  = p.ArticleID ?? p.ArticleId ?? '';
+      const chqDet = INV_CHEQUE_MAP[p.ChequeNumber] || null;
+      return buildRow(i+1, p.ChequeNumber, p.TrxDate, tcode, INV_TRX_DESC[tcode] || '', artId,
+        INV_ART_DESC[tcode + '|' + String(artId)] || '', p.HRSTaxRate, p.Quantity, upr(p.HRSAmount, p.Quantity), p.HRSAmount, false, chqDet);
+    }).join('');
+  }
+
+  function renderUngrouped() {
+    swapTbody(buildUngroupedHtml, () => INV_POSTINGS.length + ' items', false);
+  }
+
+  function renderGrouped() {
+    const hasPackage = INV_POSTINGS.some(p => { const v = p.TrxNoAgainstPackage; return v != null && v !== '' && v !== 0 && v !== '0'; });
+    if (!hasPackage) {
+      showToast('No TrxNoAgainstPackage found in this bill. Grouping is not available.');
+      groupingOn = false; document.getElementById('groupToggleBtn').classList.remove('on'); return;
+    }
+    const pkgMap = new Map(); const solo = [];
+    for (const p of INV_POSTINGS) {
+      const v = p.TrxNoAgainstPackage;
+      const hasPkg = v != null && v !== '' && v !== 0 && v !== '0';
+      if (hasPkg) { const key = String(v) + '||' + (p.HRSTaxRate || ''); if (!pkgMap.has(key)) pkgMap.set(key, []); pkgMap.get(key).push(p); }
+      else solo.push(p);
+    }
+    swapTbody(
+      () => {
+        let html = ''; let rowNo = 1;
+        for (const [, group] of pkgMap) {
+          const byAmt  = [...group].sort((a, b) => parseFloat(b.HRSAmount || 0) - parseFloat(a.HRSAmount || 0));
+          const sumAmt = group.reduce((s, p) => s + (parseFloat(p.HRSAmount) || 0), 0);
+          const sumUP  = group.reduce((s, p) => { const q = parseFloat(p.Quantity); return s + (q ? parseFloat(p.HRSAmount) / q : 0); }, 0);
+          const pkgChqDet = INV_CHEQUE_MAP[byAmt[0].ChequeNumber] || null;
+          html += buildRow(rowNo++, byAmt[0].ChequeNumber, group[0].TrxDate, '', INV_PKG_DESC, '', '', group[0].HRSTaxRate, 1, sumUP, sumAmt, true, pkgChqDet);
+        }
+        for (const p of solo) {
+          const tcode = p.TrxCode || ''; const artId = p.ArticleID ?? p.ArticleId ?? '';
+          const soloChqDet = INV_CHEQUE_MAP[p.ChequeNumber] || null;
+          html += buildRow(rowNo++, p.ChequeNumber, p.TrxDate, tcode, INV_TRX_DESC[tcode] || '', artId,
+            INV_ART_DESC[tcode + '|' + String(artId)] || '', p.HRSTaxRate, p.Quantity, upr(p.HRSAmount, p.Quantity), p.HRSAmount, false, soloChqDet);
+        }
+        return html || '<tr><td colspan="11" style="text-align:center;padding:32px 0;color:#52525b;font-style:italic;">No postings found.</td></tr>';
+      },
+      () => { const gc = pkgMap.size, sc = solo.length; return gc + ' group' + (gc !== 1 ? 's' : '') + (sc ? ' + ' + sc + ' item' + (sc !== 1 ? 's' : '') : ''); },
+      true
+    );
+  }
+
+  function toggleGrouping() {
+    groupingOn = !groupingOn;
+    const btn = document.getElementById('groupToggleBtn');
+    if (groupingOn) { btn.classList.add('on'); renderGrouped(); }
+    else            { btn.classList.remove('on'); renderUngrouped(); }
+  }
+
+  function showToast(msg) {
+    const existing = document.getElementById('inv-toast');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.id = 'inv-toast';
+    t.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#fbbf24;flex-shrink:0;"></i><span>' + msg + '</span>';
+    t.style.cssText = ['position:fixed','bottom:28px','left:50%','transform:translateX(-50%) translateY(20px)','display:flex','align-items:center','gap:10px','background:#1c1917','border:1px solid rgba(251,191,36,0.35)','color:#fde68a','font-size:12px','font-family:monospace','font-weight:600','padding:11px 20px','border-radius:10px','box-shadow:0 4px 24px rgba(0,0,0,0.6)','z-index:9999','opacity:0','transition:opacity .25s ease, transform .25s ease','white-space:nowrap','pointer-events:none'].join(';');
+    document.body.appendChild(t);
+    requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)'; });
+    setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(20px)'; setTimeout(() => t.remove(), 280); }, 3500);
+  }
+
+  renderUngrouped();
+<\/script>
+</body></html>`;
+
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.open();
+                win.document.write(invHtml);
+                win.document.close();
+            } else {
+                alert('Pop-up blocked. Please allow pop-ups for this page to view the draft invoice.');
+            }
+        }
+
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        // FORMATTER UTILITIES
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        function copyOutput()    { navigator.clipboard.writeText(document.getElementById('output-json').value).then(() => alert("Copied!")); }
+        function downloadJSON()  {
+            const txt = document.getElementById('output-json').value;
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([txt], {type: 'application/json'}));
+            a.download = `HRS_Export_${globalCurrentBill}.json`;
+            a.click();
+        }
+        function clearFormatter() {
+            document.getElementById('input-json').value = document.getElementById('output-json').value = '';
+            document.getElementById('inBillNo').textContent = document.getElementById('outBillNo').textContent = 'BillNo: â€”';
+            document.getElementById('inDot').className = document.getElementById('outDot').className = 'w-1.5 h-1.5 rounded-full bg-zinc-700';
+            document.getElementById('copyBtn').disabled = document.getElementById('dlBtn').disabled = true;
+            setFormatterStatus('ready', 'System Standing By');
+        }
+
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        // SPLIT LOG â†’ JSONs
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        async function handleSplitLogFiles(input) {
+            if (!input.files?.length) return;
+            const files = Array.from(input.files);
+            input.value = '';
+
+            const overlay = document.getElementById('splitProgressOverlay');
+            overlay.classList.remove('hidden');
+            overlay.style.display = 'flex';
+            document.getElementById('splitProgressText').textContent = "Splitting Logs...";
+
+            try {
+                if (typeof JSZip === 'undefined') throw new Error("JSZip is not loaded. Ensure you have internet access.");
+                const zip = new JSZip();
+                let total = 0;
+
+                for (let file of files) {
+                    const content = await file.text();
+                    const txs = extractTransactionsV3Core(content);
+                    const billMap = new Map();
+
+                    for (let t of txs) {
+                        if (!t.rawConvertedJson) continue;
+                        let bNo = t.billNo || 'Unknown';
+                        let c = (billMap.get(bNo) || 0) + 1;
+                        billMap.set(bNo, c);
+                        let suffix = c > 1 ? `_${c}` : '';
+                        let fname  = `${file.name.replace(/\.[^.]+$/, '')}_BillNo_${bNo}${suffix}.json`;
+                        zip.file(fname, JSON.stringify(t.rawConvertedJson, null, 4));
+                        total++;
+                    }
+                }
+
+                if (total > 0) {
+                    const blob = await zip.generateAsync({type: "blob"});
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `HRS_Split_${new Date().toISOString().slice(0,10)}.zip`;
+                    a.click();
+                    setFormatterStatus('ok', `âœ… ${total} JSON files saved as ZIP`);
+                } else {
+                    setFormatterStatus('err', `No JSONs extracted.`);
+                }
+            } catch (err) {
+                alert("Error during Split Logs to JSONs:\n" + err.message);
+                setFormatterStatus('err', `Split error: ${err.message}`);
+            } finally {
+                overlay.style.display = 'none';
+                overlay.classList.add('hidden');
+                if (document.getElementById('splitProgressBar')) {
+                    document.getElementById('splitProgressBar').style.width = `0%`;
+                }
+            }
+        }
+
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        // FISCAL API SENDER
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        async function testConnection() {
+            const ep    = document.getElementById('api-endpoint').value.trim();
+            const badge = document.getElementById('response-status-badge');
+            const body  = document.getElementById('response-body');
+
+            badge.className   = "font-mono text-[10px] font-bold text-amber-400";
+            badge.textContent = "TESTING...";
+            body.textContent  = `Pinging ${ep}...`;
+
+            try {
+                const res = await fetch(ep, { method: 'GET' });
+                const txt = await res.text();
+                let fmt = txt;
+                try { fmt = JSON.stringify(JSON.parse(txt), null, 2); } catch(e){}
+                badge.className   = res.ok ? "font-mono text-[10px] font-bold text-emerald-400" : "font-mono text-[10px] font-bold text-red-400";
+                badge.textContent = `HTTP ${res.status}`;
+                body.textContent  = fmt || `Status Code: ${res.status}\nNo message body returned.`;
+            } catch(e) {
+                badge.className   = "font-mono text-[10px] font-bold text-red-400";
+                badge.textContent = "FAILED";
+                body.textContent  = `Connection Failed: ${e.message}`;
+            }
+        }
+
+        function openFiscalConfirm() {
+            const ep          = document.getElementById('api-endpoint').value.trim();
+            const tk          = document.getElementById('api-token').value.trim();
+            const reqBody     = document.getElementById('api-body').value.trim();
+            const hotelCode   = document.getElementById('api-hotel-code').value.trim();
+            const badge       = document.getElementById('response-status-badge');
+            const respBody    = document.getElementById('response-body');
+
+            if (!tk) {
+                badge.textContent = "AUTH ERROR";
+                badge.className   = "font-mono text-[10px] font-bold text-red-400";
+                respBody.textContent = "Token required."; return;
+            }
+            if (!reqBody) {
+                badge.textContent = "EMPTY BODY";
+                badge.className   = "font-mono text-[10px] font-bold text-amber-400";
+                respBody.textContent = "Body empty."; return;
+            }
+            try { JSON.parse(reqBody); } catch(e) {
+                badge.textContent = "JSON INVALID";
+                badge.className   = "font-mono text-[10px] font-bold text-red-400";
+                respBody.textContent = "Invalid JSON."; return;
+            }
+
+            // Populate modal details
+            document.getElementById('confirmEndpoint').textContent = ep || '(no endpoint set)';
+
+            const hcRow = document.getElementById('confirmHotelCodeRow');
+            if (hotelCode) {
+                document.getElementById('confirmHotelCode').textContent = hotelCode;
+                hcRow.style.display = 'flex';
+            } else {
+                hcRow.style.display = 'none';
+            }
+
+            const modal = document.getElementById('fiscalConfirmModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => modal.querySelector('button:last-child').focus(), 50);
+        }
+
+        function closeFiscalConfirm() {
+            const modal = document.getElementById('fiscalConfirmModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmAndSend() {
+            closeFiscalConfirm();
+            sendFiscalRequest();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeFiscalConfirm();
+        });
+
+        async function sendFiscalRequest() {
+            const tk              = document.getElementById('api-token').value.trim();
+            const ep              = document.getElementById('api-endpoint').value.trim();
+            const reqBody         = document.getElementById('api-body').value.trim();
+            const hotelCodeOverride = document.getElementById('api-hotel-code').value.trim();
+            const badge           = document.getElementById('response-status-badge');
+            const respBody        = document.getElementById('response-body');
+
+            if (!tk)      { badge.textContent = "AUTH ERROR";   badge.className = "font-mono text-[10px] font-bold text-red-400";   return respBody.textContent = "Token required."; }
+            if (!reqBody) { badge.textContent = "EMPTY BODY";   badge.className = "font-mono text-[10px] font-bold text-amber-400"; return respBody.textContent = "Body empty."; }
+
+            let bd;
+            try { bd = JSON.parse(reqBody); }
+            catch(e) { badge.textContent = "JSON INVALID"; badge.className = "font-mono text-[10px] font-bold text-red-400"; return respBody.textContent = "Invalid JSON."; }
+
+            // â”€â”€ HotelCode Override: ONLY DocumentInfo.HotelCode â”€â”€
+            // Does NOT touch HotelInfo.HotelCode or any other HotelCode field
+            if (hotelCodeOverride && bd.DocumentInfo) {
+                bd.DocumentInfo.HotelCode = hotelCodeOverride;
+            }
+
+            badge.textContent = "SENDING...";
+            badge.className   = "font-mono text-[10px] font-bold text-amber-400 animate-pulse";
+            respBody.textContent = "Transmitting data...";
+
+            try {
+                const res = await fetch(ep, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tk}` },
+                    body: JSON.stringify(bd)
+                });
+
+                const txt = await res.text();
+                let fmt = txt;
+                try { fmt = JSON.stringify(JSON.parse(txt), null, 2); } catch(e){}
+
+                badge.className   = res.ok ? "font-mono text-[10px] font-bold text-emerald-400" : "font-mono text-[10px] font-bold text-red-400";
+                badge.textContent = `HTTP ${res.status}`;
+                respBody.textContent = fmt || `Status Code: ${res.status}\nNo message body returned.`;
+
+            } catch(err) {
+                badge.className   = "font-mono text-[10px] font-bold text-red-400";
+                badge.textContent = "NETWORK ERROR";
+                respBody.textContent = `Error: ${err.message}`;
+            }
+        }
+
+    </script>
+</body>
+</html>
