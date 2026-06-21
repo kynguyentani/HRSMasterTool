@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "defaultTheme": "signal-redline",
+  "themes": [
+    {
+      "id": "signal-redline",
+      "label": "Signal Redline",
+      "version": "1.0.0",
+      "css": "themes/signal-redline-1.0.0.css"
+    },
+    {
+      "id": "legacy-emerald",
+      "label": "Legacy Emerald",
+      "version": "1.0.0",
+      "css": "themes/legacy-emerald-1.0.0.css"
+    },
+    {
+      "id": "steel-amber",
+      "label": "Steel Amber",
+      "version": "1.0.0",
+      "css": "themes/steel-amber-1.0.0.css"
+    }
+  ]
+}
