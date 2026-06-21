@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HRS Master Tool Theme Catalog</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 64px 24px;
+      background: radial-gradient(circle at 20% 0%, #392018 0, transparent 38%), #080a0b;
+      color: #e8ecee;
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+    }
+    main { width: min(920px, 100%); margin: 0 auto; }
+    .eyebrow { color: #f04424; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+    h1 { max-width: 680px; margin: 12px 0 10px; font-size: clamp(34px, 6vw, 66px); line-height: .96; letter-spacing: -.05em; }
+    .intro { max-width: 680px; color: #98a2a8; line-height: 1.7; }
+    .status { display: inline-flex; gap: 8px; align-items: center; margin-top: 20px; padding: 8px 12px; border: 1px solid #30383d; border-radius: 999px; background: #111518; color: #c8d0d4; font-size: 11px; }
+    .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #35c878; box-shadow: 0 0 8px #35c878; }
+    .themes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 44px; }
+    .theme { min-height: 210px; padding: 20px; border: 1px solid #2c3337; border-radius: 16px; background: linear-gradient(145deg, #151a1d, #0d1012); }
+    .theme h2 { margin: 18px 0 6px; font-size: 16px; }
+    .theme p { margin: 0; color: #7f8a91; font-size: 11px; line-height: 1.6; }
+    .swatches { display: flex; height: 54px; overflow: hidden; border-radius: 10px; border: 1px solid #394248; }
+    .swatches span { flex: 1; }
+    .meta { margin-top: 42px; padding-top: 20px; border-top: 1px solid #282f33; color: #69747b; font-size: 10px; line-height: 1.7; }
+    @media (max-width: 720px) { .themes { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">NNK / HRS Master Tool v7.6</div>
+    <h1>Controlled color themes, zero layout drift.</h1>
+    <p class="intro">This catalog hosts immutable CSS variable files for the desktop HRS Master Tool. The application validates this manifest and retains its bundled Signal Redline theme whenever a remote asset is unavailable.</p>
+    <div class="status" id="catalog-status">Checking manifest</div>
+
+    <section class="themes" aria-label="Available themes">
+      <article class="theme">
+        <div class="swatches"><span style="background:#f04424"></span><span style="background:#f5a524"></span><span style="background:#52a8ff"></span><span style="background:#20262a"></span></div>
+        <h2>Signal Redline</h2>
+        <p>Operational red, warning amber, cool blue and a restrained charcoal field.</p>
+      </article>
+      <article class="theme">
+        <div class="swatches"><span style="background:#10b981"></span><span style="background:#38bdf8"></span><span style="background:#e879f9"></span><span style="background:#20332e"></span></div>
+        <h2>Legacy Emerald</h2>
+        <p>The original HRS green language with sky accents and familiar status contrast.</p>
+      </article>
+      <article class="theme">
+        <div class="swatches"><span style="background:#d97706"></span><span style="background:#fb923c"></span><span style="background:#7dd3fc"></span><span style="background:#26343c"></span></div>
+        <h2>Steel Amber</h2>
+        <p>Industrial steel surfaces with amber controls and clear financial color families.</p>
+      </article>
+    </section>
+
+    <p class="meta">Manifest schema 1 / Versioned assets / Variable-only contract / GitHub Pages</p>
+  </main>
+  <script>
+    fetch('manifest.json', { cache: 'no-store' })
+      .then((response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return response.json();
+      })
+      .then((manifest) => {
+        document.getElementById('catalog-status').textContent = `${manifest.themes.length} validated themes available`;
+      })
+      .catch(() => {
+        document.getElementById('catalog-status').textContent = 'Manifest unavailable';
+      });
+  </script>
+</body>
+</html>
